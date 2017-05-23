@@ -1,0 +1,5 @@
+cat <<EOF
+---
+config_vars:
+  PATH: $PATH:/app/vendor/pandoc/bin
+EOF

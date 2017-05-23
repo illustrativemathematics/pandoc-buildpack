@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+
+# edc: based on the following buildpack
+# https://github.com/ello/heroku-buildpack-imagemagick
+
+indent() {
+    sed 's/^/       /'
+}
+
+verbose() {
+    echo "-----> $1"
+}
+
+######################################
+# To update pandoc, edit the release #
+######################################
+PANDOC_RELEASE="1.19.2.1-1-amd64"
+PANDOC_URL="https://github.com/jgm/pandoc/releases/download/1.19.2.1/pandoc-$PANDOC_RELEASE.deb"
+
+verbose "Install pandoc from $PANDOC_URL"
+
+BUILD_DIR=$1
+CACHE_DIR=$2
+VENDOR_DIR="$BUILD_DIR/vendor"
+INSTALL_DIR="$VENDOR_DIR/pandoc"
+BIN_DIR="$INSTALL_DIR/bin"
+SHARE_DIR="$INSTALL_DIR/share"
+REAL_DIR="$HOME/vendor/padoc/bin"
+DEB_ARCHIVE_BINARIES="data.tar.gz"
+PANDOC_PKG="$CACHE_DIR/pandoc-$PANDOC_RELEASE.deb"
+
+mkdir -p $BUILD_DIR $CACHE_DIR $VENDOR_DIR $INSTALL_DIR $BIN_DIR $SHARE_DIR $REAL_DIR
+
+verbose "BUILD_DIR: $BUILD_DIR"
+verbose "CACHE_DIR: $CACHE_DIR"
+verbose "VENDOR_DIR: $VENDOR_DIR"
+verbose "INSTALL_DIR: $INSTALL_DIR"
+verbose "BIN_DIR: $BIN_DIR"
+verbose "SHARE_DIR: $SHARE_DIR"
+verbose "REAL_DIR: $REAL_DIR"
+
+if [ -f $PANDOC_PKG ]; then
+  verbose "Using cached pandoc pkg: $PANDOC_PKG"
+else
+    verbose "Downloading $PANDOC_URL to $PANDOC_PKG"
+    curl --silent \
+         --location \
+         --output $PANDOC_PKG \
+         $PANDOC_URL | indent
+    if [ ! -f $PANDOC_PKG ]; then
+        verbose "Error retrieving file from $PANDOC_URL"
+        exit 1;
+    fi
+fi
+
+verbose "Extract pandoc from $PANDOC_PKG to $INSTALL_DIR"
+
+ar p $PANDOC_PKG $DEB_ARCHIVE_BINARIES \
+    | tar --extract \
+          --gzip \
+          --strip-components 2 \
+          --directory $INSTALL_DIR | indent
+
+verbose "Set permissions on extracted binaries"
+chmod 755 $BIN_DIR/pandoc
+
+verbose "Extracted files:"
+ls -lR $BIN_DIR | indent
+
+PROFILE_PATH="$BUILD_DIR/.profile.d/pandoc.sh"
+mkdir -p $(dirname $PROFILE_PATH)
+echo "export PATH=$REAL_DIR:\$PATH" > $PROFILE_PATH
+
+verbose "created $PROFILE_PATH:"
+cat $PROFILE_PATH | indent
