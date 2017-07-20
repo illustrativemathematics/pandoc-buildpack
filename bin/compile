@@ -25,7 +25,7 @@ VENDOR_DIR="$BUILD_DIR/vendor"
 INSTALL_DIR="$VENDOR_DIR/pandoc"
 BIN_DIR="$INSTALL_DIR/bin"
 SHARE_DIR="$INSTALL_DIR/share"
-REAL_DIR="$HOME/vendor/padoc/bin"
+REAL_DIR="$HOME/vendor/pandoc/bin"
 DEB_ARCHIVE_BINARIES="data.tar.gz"
 PANDOC_PKG="$CACHE_DIR/pandoc-$PANDOC_RELEASE.deb"
 
