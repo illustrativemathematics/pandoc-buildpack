@@ -1,22 +1,12 @@
 #!/usr/bin/env bash
 
-# edc: based on the following buildpack
-# https://github.com/ello/heroku-buildpack-imagemagick
-
-verbose() {
-    echo "-----> $1"
-}
-
-######################################
-# To update pandoc, edit the release #
-######################################
-PANDOC_FILENAME="pandoc-2.0.3-linux.tar.gz"
-PANDOC_URL="https://github.com/jgm/pandoc/releases/download/2.0.3/$PANDOC_FILENAME"
-
-verbose "Install pandoc from $PANDOC_URL"
-
 BUILD_DIR=$1
 CACHE_DIR=$2
+
+echo "Install pandoc from $PANDOC_URL"
+
+PANDOC_FILENAME="pandoc-2.0.3-linux.tar.gz"
+PANDOC_URL="https://github.com/jgm/pandoc/releases/download/2.0.3/$PANDOC_FILENAME"
 VENDOR_DIR="$BUILD_DIR/vendor"
 BIN_DIR="$VENDOR_DIR/pandoc/bin"
 REAL_DIR="$HOME/vendor/pandoc/bin"
@@ -24,35 +14,35 @@ PANDOC_PKG="$CACHE_DIR/$PANDOC_FILENAME"
 
 mkdir -p $BUILD_DIR $CACHE_DIR $VENDOR_DIR $BIN_DIR $REAL_DIR
 
-verbose "BUILD_DIR: $BUILD_DIR"
-verbose "CACHE_DIR: $CACHE_DIR"
-verbose "VENDOR_DIR: $VENDOR_DIR"
-verbose "BIN_DIR: $BIN_DIR"
-verbose "REAL_DIR: $REAL_DIR"
+echo "BUILD_DIR: $BUILD_DIR"
+echo "CACHE_DIR: $CACHE_DIR"
+echo "VENDOR_DIR: $VENDOR_DIR"
+echo "BIN_DIR: $BIN_DIR"
+echo "REAL_DIR: $REAL_DIR"
 
 if [ -f $PANDOC_PKG ]; then
-  verbose "Using cached pandoc pkg: $PANDOC_PKG"
+  echo "Using cached pandoc pkg: $PANDOC_PKG"
 else
-    verbose "Downloading $PANDOC_URL to $PANDOC_PKG"
-    curl --silent --location --output $PANDOC_PKG $PANDOC_URL
-    if [ ! -f $PANDOC_PKG ]; then
-        verbose "Error retrieving file from $PANDOC_URL"
-        exit 1;
-    fi
+  echo "Downloading $PANDOC_URL to $PANDOC_PKG"
+  curl --silent --location --output $PANDOC_PKG $PANDOC_URL
+  if [ ! -f $PANDOC_PKG ]; then
+    echo "Error retrieving file from $PANDOC_URL"
+    exit 1;
+  fi
 fi
 
-verbose "Extract pandoc from $PANDOC_PKG to $VENDOR_DIR/pandoc"
+echo "Extract pandoc from $PANDOC_PKG to $VENDOR_DIR/pandoc"
 tar xvzf $PANDOC_PKG --strip-components 1 -C $VENDOR_DIR/pandoc
 
-verbose "Set permissions on extracted binaries"
+echo "Set permissions on extracted binaries"
 chmod 755 $BIN_DIR/pandoc
 
-verbose "Extracted files:"
-ls -lR $BIN_DIR | indent
+echo "Extracted files:"
+ls -lR $BIN_DIR
 
 PROFILE_PATH="$BUILD_DIR/.profile.d/pandoc.sh"
 mkdir -p $(dirname $PROFILE_PATH)
 echo "export PATH=$REAL_DIR:\$PATH" > $PROFILE_PATH
 
-verbose "created $PROFILE_PATH:"
+echo "created $PROFILE_PATH:"
 cat $PROFILE_PATH
