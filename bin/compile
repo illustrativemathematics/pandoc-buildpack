@@ -5,8 +5,8 @@ CACHE_DIR=$2
 
 echo "Install pandoc from $PANDOC_URL"
 
-PANDOC_FILENAME="pandoc-2.0.3-linux.tar.gz"
-PANDOC_URL="https://github.com/jgm/pandoc/releases/download/2.0.3/$PANDOC_FILENAME"
+PANDOC_FILENAME="pandoc-2.3-linux.tar.gz"
+PANDOC_URL="https://github.com/jgm/pandoc/releases/download/2.3/$PANDOC_FILENAME"
 VENDOR_DIR="$BUILD_DIR/vendor"
 BIN_DIR="$VENDOR_DIR/pandoc/bin"
 REAL_DIR="$HOME/vendor/pandoc/bin"
