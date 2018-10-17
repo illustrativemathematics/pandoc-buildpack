@@ -14,8 +14,12 @@ verbose() {
 ######################################
 # To update pandoc, edit the release #
 ######################################
-PANDOC_RELEASE="1.19.2.1-1-amd64"
-PANDOC_URL="https://github.com/jgm/pandoc/releases/download/1.19.2.1/pandoc-$PANDOC_RELEASE.deb"
+
+# e.g. https://github.com/jgm/pandoc/releases/download/2.3.1/pandoc-2.3.1-1-amd64.deb
+PANDOC_BASE_URL="https://github.com/jgm/pandoc/releases/download"
+PANDOC_RELASE_DIR="2.3.1"
+PANDOC_RELEASE="pandoc-2.3.1-1-amd64.deb"
+PANDOC_URL="$PANDOC_BASE_URL/$PANDOC_RELASE_DIR/$PANDOC_RELEASE"
 
 verbose "Install pandoc from $PANDOC_URL"
 
@@ -26,8 +30,8 @@ INSTALL_DIR="$VENDOR_DIR/pandoc"
 BIN_DIR="$INSTALL_DIR/bin"
 SHARE_DIR="$INSTALL_DIR/share"
 REAL_DIR="$HOME/vendor/pandoc/bin"
-DEB_ARCHIVE_BINARIES="data.tar.gz"
-PANDOC_PKG="$CACHE_DIR/pandoc-$PANDOC_RELEASE.deb"
+DEB_ARCHIVE_BINARIES="data.tar.xz"
+PANDOC_PKG="$CACHE_DIR/$PANDOC_RELEASE"
 
 mkdir -p $BUILD_DIR $CACHE_DIR $VENDOR_DIR $INSTALL_DIR $BIN_DIR $SHARE_DIR $REAL_DIR
 
@@ -57,7 +61,7 @@ verbose "Extract pandoc from $PANDOC_PKG to $INSTALL_DIR"
 
 ar p $PANDOC_PKG $DEB_ARCHIVE_BINARIES \
     | tar --extract \
-          --gzip \
+          --xz \
           --strip-components 2 \
           --directory $INSTALL_DIR | indent
 
