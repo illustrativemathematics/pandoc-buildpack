@@ -17,8 +17,8 @@ verbose() {
 
 # e.g. https://github.com/jgm/pandoc/releases/download/2.3.1/pandoc-2.3.1-1-amd64.deb
 PANDOC_BASE_URL="https://github.com/jgm/pandoc/releases/download"
-PANDOC_RELASE_DIR="2.3.1"
-PANDOC_RELEASE="pandoc-2.3.1-1-amd64.deb"
+PANDOC_RELASE_DIR="2.9"
+PANDOC_RELEASE="pandoc-2.9-1-amd64.deb"
 PANDOC_URL="$PANDOC_BASE_URL/$PANDOC_RELASE_DIR/$PANDOC_RELEASE"
 
 verbose "Install pandoc from $PANDOC_URL"
