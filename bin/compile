@@ -11,69 +11,93 @@ verbose() {
     echo "-----> $1"
 }
 
-######################################
-# To update pandoc, edit the release #
-######################################
-
-# e.g. https://github.com/jgm/pandoc/releases/download/2.3.1/pandoc-2.3.1-1-amd64.deb
-PANDOC_BASE_URL="https://github.com/jgm/pandoc/releases/download"
-PANDOC_RELASE_DIR="2.9"
-PANDOC_RELEASE="pandoc-2.9-1-amd64.deb"
-PANDOC_URL="$PANDOC_BASE_URL/$PANDOC_RELASE_DIR/$PANDOC_RELEASE"
-
-verbose "Install pandoc from $PANDOC_URL"
-
 BUILD_DIR=$1
 CACHE_DIR=$2
+ENV_DIR=$3
+
+PANDOC_ARCHIVE_URL_FILE=${ENV_DIR}/PANDOC_ARCHIVE_URL
+PANDOC_RELEASE_FILE=${ENV_DIR}/PANDOC_RELEASE
+
+PANDOC_DEFAULT_ARCHIVE_URL="https://github.com/jgm/pandoc/releases/download/2.19.2/pandoc-2.19.2-linux-amd64.tar.gz"
+PANDOC_DEFAULT_RELEASE="2.19.2"
+
+if [ -f $PANDOC_ARCHIVE_URL_FILE ]; then
+    PANDOC_ARCHIVE_URL=$(cat $PANDOC_ARCHIVE_URL_FILE)
+else
+    PANDOC_ARCHIVE_URL=$PANDOC_DEFAULT_ARCHIVE_URL
+fi
+
+if [ -f $PANDOC_ARCHIVE_URL_FILE ]; then
+    PANDOC_RELEASE=$(cat $PANDOC_RELEASE_FILE)
+else
+    PANDOC_RELEASE=$PANDOC_DEFAULT_RELEASE
+fi
+
+PANDOC_BASE="pandoc-$PANDOC_RELEASE"
+PANDOC_PKG="$CACHE_DIR/$PANDOC_BASE.tar.gz"
+
 VENDOR_DIR="$BUILD_DIR/vendor"
-INSTALL_DIR="$VENDOR_DIR/pandoc"
+INSTALL_DIR="$VENDOR_DIR/$PANDOC_BASE"
 BIN_DIR="$INSTALL_DIR/bin"
+PANDOC_EXECUTABLE="$BIN_DIR/pandoc"
 SHARE_DIR="$INSTALL_DIR/share"
-RUNTIME_DIR="\$HOME/vendor/pandoc/bin"
-DEB_ARCHIVE_BINARIES="data.tar.xz"
-PANDOC_PKG="$CACHE_DIR/$PANDOC_RELEASE"
+RUNTIME_DIR="\$HOME/vendor/$PANDOC_BASE/bin"
+PROFILE_PATH="$BUILD_DIR/.profile.d/pandoc.sh"
 
-mkdir -p $BUILD_DIR $CACHE_DIR $VENDOR_DIR $INSTALL_DIR $BIN_DIR $SHARE_DIR
+mkdir -p $BUILD_DIR $CACHE_DIR $VENDOR_DIR $INSTALL_DIR $SHARE_DIR
+mkdir -p $(dirname $PROFILE_PATH)
 
+verbose "installing with this configuration:"
 verbose "BUILD_DIR: $BUILD_DIR"
 verbose "CACHE_DIR: $CACHE_DIR"
+verbose "ENV_DIR: $ENV_DIR"
 verbose "VENDOR_DIR: $VENDOR_DIR"
 verbose "INSTALL_DIR: $INSTALL_DIR"
-verbose "BIN_DIR: $BIN_DIR"
+verbose "PANDOC_EXECUTABLE: $PANDOC_EXECUTABLE"
 verbose "SHARE_DIR: $SHARE_DIR"
 verbose "RUNTIME_DIR: $RUNTIME_DIR"
+verbose "PROFILE_PATH: $PROFILE_PATH"
+verbose "PANDOC_ARCHIVE_URL: $PANDOC_ARCHIVE_URL"
+verbose "PANDOC_RELEASE: $PANDOC_RELEASE"
+verbose "PANDOC_PKG: $PANDOC_PKG"
 
 if [ -f $PANDOC_PKG ]; then
-  verbose "Using cached pandoc pkg: $PANDOC_PKG"
+    verbose "Using cached pandoc pkg: $PANDOC_PKG"
 else
-    verbose "Downloading $PANDOC_URL to $PANDOC_PKG"
+    verbose "Downloading from: $PANDOC_ARCHIVE_URL"
+    verbose "Downloading to: $PANDOC_PKG"
     curl --silent \
          --location \
          --output $PANDOC_PKG \
-         $PANDOC_URL | indent
+         $PANDOC_ARCHIVE_URL | indent
     if [ ! -f $PANDOC_PKG ]; then
-        verbose "Error retrieving file from $PANDOC_URL"
+        verbose "Error retrieving file from $PANDOC_ARCHIVE_URL"
         exit 1;
     fi
 fi
 
-verbose "Extract pandoc from $PANDOC_PKG to $INSTALL_DIR"
+verbose "pandoc package status:"
+ls -l $PANDOC_PKG
 
-ar p $PANDOC_PKG $DEB_ARCHIVE_BINARIES \
-    | tar --extract \
-          --xz \
-          --strip-components 2 \
-          --directory $INSTALL_DIR | indent
+verbose "Extract archive from: $PANDOC_PKG"
+verbose "Extract archive to: $INSTALL_DIR"
 
-verbose "Set permissions on extracted binaries"
-chmod 755 $BIN_DIR/pandoc
+tar --extract \
+    --verbose \
+    --gunzip \
+    --file $PANDOC_PKG \
+    --directory $VENDOR_DIR | indent
 
-verbose "Extracted files:"
-ls -lR $BIN_DIR | indent
+verbose "extracted files include:"
+ls -lR $INSTALL_DIR | indent
 
-PROFILE_PATH="$BUILD_DIR/.profile.d/pandoc.sh"
-mkdir -p $(dirname $PROFILE_PATH)
+verbose "Set permissions on executable $PANDOC_EXECUTABLE:"
+chmod 755 $PANDOC_EXECUTABLE
+ls -l $PANDOC_EXECUTABLE
+
 echo "export PATH=$RUNTIME_DIR:\$PATH" > $PROFILE_PATH
 
 verbose "created $PROFILE_PATH:"
 cat $PROFILE_PATH | indent
+
+verbose "***** done installing pandoc! *****"
